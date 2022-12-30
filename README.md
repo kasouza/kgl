@@ -8,6 +8,5 @@ mkdir build
 cd build
 cmake .. && cmake --build .
 ```
-Then link to the generated static library.
-Or the way I personally prefer to use this library is by cloning this repo and using CMake `àdd_library(path_to_kgl)`.
-
+Then link to the generated static library
+or dot the way I prefer and clone this repo and use CMake `àdd_subdirectory(path_to_kgl)`.
