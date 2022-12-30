@@ -7,9 +7,6 @@ set(SOURCES
 	utils.c
 )
 
-file(COPY shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 target_compile_features(${PROJECT_NAME} PUBLIC c_std_17)
