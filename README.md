@@ -4,9 +4,11 @@ KGL is a simple 2d renderer written in c using OpenGL. For now, the idea for thi
 
 # Build
 ```
+git clone https://github.com/kasouza/kgl
+git submodule update --init --recursive
 mkdir build
 cd build
 cmake .. && cmake --build .
 ```
-Then link to the generated static library
+Then link to the generated static library.
 or dot the way I prefer and clone this repo and use CMake `àdd_subdirectory(path_to_kgl)`.
