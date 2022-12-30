@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char *box_read_file(const char *path)
+char *kgl_read_file(const char *path)
 {
     FILE *file_pointer = fopen(path, "r");
     if (!file_pointer)
@@ -24,24 +24,24 @@ char *box_read_file(const char *path)
     return file_content;
 }
 
-void *box_malloc(unsigned long size)
+void *kgl_malloc(unsigned long size)
 {
     void *memory = malloc(size);
     if (!memory)
     {
-        BOX_LOG("Could not allocate memory, exiting...\n");
+        fprintf(stderr, "Could not allocate memory, exiting...\n");
         exit(-1);
     }
 
     return memory;
 }
 
-void *box_calloc(unsigned long n, unsigned long size)
+void *kgl_calloc(unsigned long n, unsigned long size)
 {
     void *memory = calloc(n, size);
     if (!memory)
     {
-        BOX_LOG("Could not allocate memory, exiting...\n");
+        fprintf(stderr, "Could not allocate memory, exiting...\n");
         exit(-1);
     }
 

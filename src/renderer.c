@@ -2,6 +2,7 @@
 #include "kgl/error.h"
 #include "kgl/input.h"
 #include "kgl/shaders.h"
+#include "kgl/texture.h"
 #include "kgl/utils.h"
 
 #include <math.h>
@@ -106,8 +107,13 @@ static enum KglError setup_buffers()
 
 static enum KglError setup_programs()
 {
-    s_program =
-        create_program("shaders/passthrough.vert", "shaders/passthrough.frag");
+    GLuint vertex = load_shader(kgl_sprite_vertex_shader, GL_VERTEX_SHADER);
+    GLuint fragment =
+        load_shader(kgl_sprite_fragment_shader, GL_FRAGMENT_SHADER);
+    assert(vertex != 0);
+    assert(fragment != 0);
+
+    s_program = create_program(vertex, fragment);
     if (!s_program)
         return KGL_ERROR_PROGRAM_CREATION;
 
@@ -134,14 +140,14 @@ int kgl_init(int window_width, int window_height, enum KglInitFlags flags)
 
 void kgl_clear()
 {
-	glClearColor(0.1, 0.1, 0.1, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0.1, 0.1, 0.1, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void kgl_clear_colored(float r, float g, float b, float a)
 {
-	glClearColor(r, g, b, a);
-	glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void kgl_present()
@@ -192,28 +198,42 @@ void kgl_terminate()
     glfwTerminate();
 }
 
-void kgl_draw_sprite(unsigned int texture, double x, double y, double width,
+void kgl_draw_sprite(struct KglSprite *sprite, double x, double y, double width,
                      double height, double rotation, double pivot_x,
                      double pivot_y)
 {
-    kgl_draw_sub_sprite(texture, x, y, width, height, rotation, pivot_x,
-                        pivot_y, 0.0f, 0.0f, width, height);
+    assert(sprite != NULL);
+    assert(sprite->texture != 0);
+    assert(sprite->width > 0 && sprite->height > 0);
+    kgl_draw_sub_sprite(sprite, x, y, width, height, rotation, pivot_x, pivot_y,
+                        0.0f, 0.0f, sprite->width, sprite->height);
 }
 
-void kgl_draw_sub_sprite(unsigned int texture, double x, double y, double width,
-                         double height, double rotation, double pivot_x,
-                         double pivot_y, double sub_x1, double sub_y1,
-                         double sub_x2, double sub_y2)
+void kgl_draw_sub_sprite(struct KglSprite *sprite, double x, double y,
+                         double width, double height, double rotation,
+                         double pivot_x, double pivot_y, double sub_x1,
+                         double sub_y1, double sub_x2, double sub_y2)
 {
+    assert(sprite != NULL);
+    assert(sprite->texture != 0);
+    assert(sprite->width > 0 && sprite->height > 0);
+    assert(sub_x1 >= 0 && sub_x1 <= sprite->width && sub_y1 >= 0 &&
+           sub_y1 <= sprite->height &&
+           "Sub sprite is out of the texture's bounds.");
+    assert(sub_x2 >= 0 && sub_x2 <= sprite->width && sub_y2 >= 0 &&
+           sub_y2 <= sprite->height &&
+           "Sub sprite is out of the texture's bounds.");
+
     glUseProgram(s_program);
     glBindVertexArray(s_rect_vao);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, sprite->texture);
 
     glUniform1f(glGetUniformLocation(s_program, "window_width"),
                 s_window_width);
     glUniform1f(glGetUniformLocation(s_program, "window_height"),
                 s_window_height);
 
+    // All of this can be simplified by using Matrices
     glUniform1f(glGetUniformLocation(s_program, "translation_x"), x);
     glUniform1f(glGetUniformLocation(s_program, "translation_y"), y);
 
@@ -222,6 +242,9 @@ void kgl_draw_sub_sprite(unsigned int texture, double x, double y, double width,
     glUniform1f(glGetUniformLocation(s_program, "rotation"), rotation);
 
     glUniform2f(glGetUniformLocation(s_program, "pivot"), pivot_x, pivot_y);
+
+    glUniform2f(glGetUniformLocation(s_program, "sprite_size"), sprite->width,
+                sprite->height);
 
     glUniform2f(glGetUniformLocation(s_program, "uv_1"), sub_x1, sub_y1);
     glUniform2f(glGetUniformLocation(s_program, "uv_2"), sub_x2, sub_y2);

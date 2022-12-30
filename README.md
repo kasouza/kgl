@@ -8,8 +8,6 @@ mkdir build
 cd build
 cmake .. && cmake --build .
 ```
-Then link the generated static library.
-Note: You NEED to copy the `shaders` folder to where your executable is when using the library like this. (I'll fix this soon)
-
+Then link to the generated static library.
 Or the way I personally prefer to use this library is by cloning this repo and using CMake `àdd_library(path_to_kgl)`.
 

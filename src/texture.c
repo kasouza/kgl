@@ -1,9 +1,12 @@
+#include "kgl/texture.h"
 #include "kgl/gl_includes.h"
+#include "kgl/utils.h"
 
+#include <assert.h>
 #include <stb_image.h>
 #include <stdbool.h>
 
-unsigned int kgl_load_texture(const char *path_to_image)
+struct KglSprite *kgl_load_sprite(const char *path_to_image)
 {
     stbi_set_flip_vertically_on_load(true);
 
@@ -12,7 +15,7 @@ unsigned int kgl_load_texture(const char *path_to_image)
         stbi_load(path_to_image, &width, &height, &nr_channels, 0);
 
     if (!data)
-        return 0;
+        return NULL;
 
     GLenum format;
     switch (nr_channels)
@@ -34,7 +37,7 @@ unsigned int kgl_load_texture(const char *path_to_image)
         break;
 
     default:
-        return 0;
+        return NULL;
     }
 
     unsigned int texture;
@@ -52,5 +55,22 @@ unsigned int kgl_load_texture(const char *path_to_image)
 
     stbi_image_free(data);
 
-    return texture;
+    struct KglSprite *sprite = kgl_malloc(sizeof(struct KglSprite));
+    sprite->texture = texture;
+    sprite->width = width;
+    sprite->height = height;
+
+    return sprite;
+}
+
+void kgl_free_sprite(struct KglSprite *sprite)
+{
+    assert(sprite != NULL);
+
+    // TODO: This could be optimized if all the textues were stored in an array
+    // (when deleting all the textures)
+    if (sprite->texture)
+        glDeleteTextures(1, &sprite->texture);
+
+    free(sprite);
 }
