@@ -94,12 +94,12 @@ static enum KglError setup_buffers()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5,
                           (void *)0);
     glEnableVertexAttribArray(0);
-    glBindVertexArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5,
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5,
                           (void *)(sizeof(float) * 3));
-    glEnableVertexAttribArray(0);
-    glBindVertexArray(1);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
 
     return KGL_SUCCESS;
 }
@@ -132,12 +132,24 @@ int kgl_init(int window_width, int window_height, enum KglInitFlags flags)
     return KGL_SUCCESS;
 }
 
+void kgl_clear()
+{
+	glClearColor(0.1, 0.1, 0.1, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void kgl_clear_colored(float r, float g, float b, float a)
+{
+	glClearColor(r, g, b, a);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
 void kgl_present()
 {
-	// Update subsystems
+    // Update subsystems
     kgl_input_update();
 
-	// Render
+    // Render
     static double start = -1;
     double dt = 1.0 / 60.0;
     if (start == -1)
@@ -151,13 +163,10 @@ void kgl_present()
         start = now;
     }
 
-    glClearColor(0.1, 0.1, 0.1, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(s_program);
-    glBindVertexArray(s_rect_vao);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    /* glUseProgram(s_program); */
+    /* glBindVertexArray(s_rect_vao); */
+    /*  */
+    /* glDrawArrays(GL_TRIANGLES, 0, 6); */
 
     if (s_flags & KGL_UNLOCK_FPS)
         glfwSwapInterval(0);
@@ -181,6 +190,43 @@ void kgl_terminate()
 
     glfwDestroyWindow(s_window);
     glfwTerminate();
+}
+
+void kgl_draw_sprite(unsigned int texture, double x, double y, double width,
+                     double height, double rotation, double pivot_x,
+                     double pivot_y)
+{
+    kgl_draw_sub_sprite(texture, x, y, width, height, rotation, pivot_x,
+                        pivot_y, 0.0f, 0.0f, width, height);
+}
+
+void kgl_draw_sub_sprite(unsigned int texture, double x, double y, double width,
+                         double height, double rotation, double pivot_x,
+                         double pivot_y, double sub_x1, double sub_y1,
+                         double sub_x2, double sub_y2)
+{
+    glUseProgram(s_program);
+    glBindVertexArray(s_rect_vao);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glUniform1f(glGetUniformLocation(s_program, "window_width"),
+                s_window_width);
+    glUniform1f(glGetUniformLocation(s_program, "window_height"),
+                s_window_height);
+
+    glUniform1f(glGetUniformLocation(s_program, "translation_x"), x);
+    glUniform1f(glGetUniformLocation(s_program, "translation_y"), y);
+
+    glUniform2f(glGetUniformLocation(s_program, "scale"), width, height);
+
+    glUniform1f(glGetUniformLocation(s_program, "rotation"), rotation);
+
+    glUniform2f(glGetUniformLocation(s_program, "pivot"), pivot_x, pivot_y);
+
+    glUniform2f(glGetUniformLocation(s_program, "uv_1"), sub_x1, sub_y1);
+    glUniform2f(glGetUniformLocation(s_program, "uv_2"), sub_x2, sub_y2);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 GLFWwindow *kgl_get_window() { return s_window; }

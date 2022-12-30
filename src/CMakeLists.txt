@@ -3,6 +3,7 @@ set(SOURCES
 	input.c
 	renderer.c
 	shaders.c
+	texture.c
 	utils.c
 )
 

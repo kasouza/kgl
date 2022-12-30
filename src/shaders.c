@@ -1,6 +1,7 @@
 #include "kgl/shaders.h"
 #include "kgl/utils.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 
 GLuint load_shader(const char *path, GLenum shader_type)
@@ -29,7 +30,7 @@ GLuint load_shader(const char *path, GLenum shader_type)
         glGetShaderInfoLog(shader, INFO_LOG_MAX_LENGTH, &info_log_length,
                            info_log);
 
-        /* DEBUG_LOG("Could not compile shader %s\n", info_log); */
+        fprintf(stderr, "shader  error - \"%s\": %s\n", path, info_log);
 
         glDeleteShader(shader);
 
@@ -70,7 +71,7 @@ GLuint create_program(const char *vertex_shader_path,
         glGetProgramInfoLog(program, INFO_LOG_MAX_LENGTH, &info_log_length,
                             info_log);
 
-        /* DEBUG_LOG(info_log); */
+        fprintf(stderr, "program error: %s\n", info_log);
 
         glDeleteProgram(program);
         return 0;
